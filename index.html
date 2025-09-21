@@ -217,13 +217,13 @@
         <div class="content">
             <div class="form-section">
                 <div class="form-group">
-                    <label for="pathogen">病原体名称</label>
-                    <input type="text" id="pathogen" placeholder="例如：乙型肝炎病毒（HBV）" value="乙型肝炎病毒（HBV）">
+                    <label for="pathogen">病原体名称 *</label>
+                    <input type="text" id="pathogen" placeholder="例如：乙型肝炎病毒" value="乙型肝炎病毒" required>
                 </div>
                 
                 <div class="form-group">
-                    <label for="pathogenAbbr">病原体英文简称</label>
-                    <input type="text" id="pathogenAbbr" placeholder="例如：HBV" value="HBV">
+                    <label for="pathogenAbbr">病原体英文简称 *</label>
+                    <input type="text" id="pathogenAbbr" placeholder="例如：HBV" value="HBV" required>
                 </div>
                 
                 <div class="form-group">
@@ -284,19 +284,19 @@
             
             // 完整的说明书模板
             const fullTemplate = `
-                <h2 style="text-align: center;">{pathogen}全基因组捕获试剂盒说明书</h2>
+                <h2 style="text-align: center;">{pathogen}（{pathogenAbbr}）全基因组捕获试剂盒说明书</h2>
                 
                 <h3>【产品名称】</h3>
-                <p>{pathogen}全基因组捕获试剂盒</p>
+                <p>{pathogen}（{pathogenAbbr}）全基因组捕获试剂盒</p>
                 
                 <h3>【包装规格】</h3>
                 <p>{spec}人份/盒。（货号{itemNum}）</p>
                 
                 <h3>【预期用途】</h3>
-                <p>本试剂盒基于杂交捕获法，用于从临床样本中高效捕获并富集{pathogen}全基因组序列，进而构建适用于高通量测序平台的测序文库。通过获取完整基因组信息，可实现对病毒基因型、亚型、耐药突变、免疫逃逸突变、复制能力等重要分子特征的全面解析，为感染的精准分型、个体化治疗策略制定、疫苗逃逸监测以及病毒进化研究提供关键分子依据。</p>
+                <p>本试剂盒基于杂交捕获法，用于从临床样本中高效捕获并富集{pathogen}全基因组序列，进而构建适用于高通量测序平台的测序文库。通过获取完整基因组信息，可实现对病原体基因型、亚型、耐药突变、免疫逃逸突变、复制能力等重要分子特征的全面解析，为感染的精准分型、个体化治疗策略制定、疫苗逃逸监测以及病原体进化研究提供关键分子依据。</p>
                 
                 <h3>【实验原理】</h3>
-                <p>本试剂盒基于杂交捕获技术，通过与{pathogen}全基因组特异性互补的DNA探针，高效捕获经宏基因组DNA建库试剂盒（可逆末端终止测序法，货号：MD001）构建的预文库中的DNA片段。在杂交体系中，探针与目标序列特异性结合，经洗脱去除未结合和非特异性核酸，实现对基因组的精准富集。富集后的目标DNA可用于Illumina平台高通量测序，最终获得覆盖完整病毒基因组的测序数据，支持后续基因分型、变异检测等深入分析。</p>
+                <p>本试剂盒基于杂交捕获技术，通过与{pathogen}全基因组特异性互补的DNA探针，高效捕获经宏基因组DNA建库试剂盒（可逆末端终止测序法，货号：MD001）构建的预文库中的DNA片段。在杂交体系中，探针与目标序列特异性结合，经洗脱去除未结合和非特异性核酸，实现对基因组的精准富集。富集后的目标DNA可用于Illumina平台高通量测序，最终获得覆盖完整病原体基因组的测序数据，支持后续基因分型、变异检测等深入分析。</p>
                 
                 <h3>【主要组成成分】</h3>
                 <table>
@@ -597,8 +597,12 @@
                 const itemNum = document.getElementById('itemNum').value.trim();
                 
                 // 验证输入
-                if (!pathogen || !pathogenAbbr || !itemNum) {
-                    alert('请填写完整的病原体名称、英文简称和货号！');
+                if (!pathogen || !pathogenAbbr) {
+                    alert('请填写病原体名称和英文简称（必填项）！');
+                    return;
+                }
+                if (!itemNum) {
+                    alert('请填写货号！');
                     return;
                 }
                 
@@ -686,7 +690,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>${pathogen}全基因组捕获试剂盒说明书</title>
+    <title>${pathogen}（${pathogenAbbr}）全基因组捕获试剂盒说明书</title>
     <style>
         body {
             font-family: 'Microsoft YaHei', 'SimSun', Arial, sans-serif;
@@ -807,7 +811,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>${pathogen}全基因组捕获试剂盒说明书</title>
+    <title>${pathogen}（${pathogenAbbr}）全基因组捕获试剂盒说明书</title>
     <style>
         @page {
             size: A4;
@@ -818,7 +822,7 @@
                 color: #666;
             }
             @top-right {
-                content: "${pathogen}全基因组捕获试剂盒说明书";
+                content: "${pathogen}（${pathogenAbbr}）全基因组捕获试剂盒说明书";
                 font-size: 10px;
                 color: #666;
             }

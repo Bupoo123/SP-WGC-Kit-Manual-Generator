@@ -217,6 +217,15 @@
         <div class="content">
             <div class="form-section">
                 <div class="form-group">
+                    <label for="pathogenType">病原体类型 *</label>
+                    <select id="pathogenType" required>
+                        <option value="">请选择病原体类型</option>
+                        <option value="DNA" selected>DNA病原体</option>
+                        <option value="RNA">RNA病原体</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
                     <label for="pathogen">病原体名称 *</label>
                     <input type="text" id="pathogen" placeholder="例如：乙型肝炎病毒" value="乙型肝炎病毒" required>
                 </div>
@@ -282,8 +291,8 @@
             const printPdfBtn = document.getElementById('printPdfBtn');
             const instructionsDiv = document.getElementById('instructions');
             
-            // 完整的说明书模板
-            const fullTemplate = `
+            // DNA病原体说明书模板
+            const dnaTemplate = `
                 <h2 style="text-align: center;">{pathogen}（{pathogenAbbr}）全基因组捕获试剂盒说明书</h2>
                 
                 <h3>【产品名称】</h3>
@@ -589,14 +598,330 @@
                 <p>生产地址：浙江省杭州市余杭区良渚街道金昌路2073号3号楼3-4层</p>
             `;
 
+            // RNA病原体说明书模板
+            const rnaTemplate = `
+                <h2 style="text-align: center;">{pathogen}（{pathogenAbbr}）全基因组捕获试剂盒说明书</h2>
+                
+                <h3>【产品名称】</h3>
+                <p>{pathogen}（{pathogenAbbr}）全基因组捕获试剂盒</p>
+                
+                <h3>【包装规格】</h3>
+                <p>{spec}人份/盒。（货号{itemNum}）</p>
+                
+                <h3>【预期用途】</h3>
+                <p>本试剂盒基于杂交捕获法，用于从临床样本中高效捕获并富集{pathogen}全基因组序列，进而构建适用于高通量测序平台的测序文库。通过获取完整基因组信息，可实现对病原体基因型、亚型、耐药突变、免疫逃逸突变、复制能力等重要分子特征的全面解析，为感染的精准分型、个体化治疗策略制定、疫苗逃逸监测以及病原体进化研究提供关键分子依据。</p>
+                
+                <h3>【实验原理】</h3>
+                <p>本试剂盒基于杂交捕获技术，通过与{pathogen}全基因组特异性互补的DNA探针，高效捕获经逆转录试剂盒（货号：MD017）宏基因组DNA建库试剂盒（可逆末端终止测序法，货号：MD001）构建的预文库中的DNA片段。在杂交体系中，探针与目标序列特异性结合，经洗脱去除未结合和非特异性核酸，实现对基因组的精准富集。富集后的目标DNA可用于Illumina平台高通量测序，最终获得覆盖完整病原体基因组的测序数据，支持后续基因分型、变异检测等深入分析。</p>
+                
+                <h3>【主要组成成分】</h3>
+                <table>
+                    <tr>
+                        <th>组分名称</th>
+                        <th>A盒（{spec}人份/盒）</th>
+                    </tr>
+                    <tr>
+                        <td>Hyb Buffer</td>
+                        <td>{hybBuffer}</td>
+                    </tr>
+                    <tr>
+                        <td>Human Block</td>
+                        <td>{humanBlock}</td>
+                    </tr>
+                    <tr>
+                        <td>Blocking Oligo</td>
+                        <td>{blockingOligo}</td>
+                    </tr>
+                    <tr>
+                        <td>{pathogenAbbr} Probes</td>
+                        <td>{probes}</td>
+                    </tr>
+                    <tr>
+                        <td>PCR Primer</td>
+                        <td>{pcrPrimer}</td>
+                    </tr>
+                    <tr>
+                        <td>PCR Mix</td>
+                        <td>{pcrMix}</td>
+                    </tr>
+                </table>
+                
+                <table>
+                    <tr>
+                        <th>组分名称</th>
+                        <th>B盒（{spec}人份/盒）</th>
+                    </tr>
+                    <tr>
+                        <td>捕获磁珠</td>
+                        <td>{beads}</td>
+                    </tr>
+                    <tr>
+                        <td>Wash Buffer 1</td>
+                        <td>{washBuffer1}</td>
+                    </tr>
+                    <tr>
+                        <td>Wash Buffer 2</td>
+                        <td>{washBuffer2}</td>
+                    </tr>
+                    <tr>
+                        <td>Binding Buffer</td>
+                        <td>{bindingBuffer}</td>
+                    </tr>
+                </table>
+                
+                <h3>【储存条件及有效期】</h3>
+                <p>本试剂盒分为A盒与B盒。A盒于-20 ± 5 ℃密闭保存和运输，有效期12个月。B盒于2~8 ℃密闭保存和运输，有效期12个月。B盒组分使用前需要在室温平衡30min以上方可使用。</p>
+                
+                <p>试剂盒需自备主要试剂和仪器</p>
+                <ol>
+                    <li>核酸提取试剂盒；</li>
+                    <li>逆转录试剂盒（货号：MD017，生产商：杭州杰毅生物技术有限公司)；</li>
+                    <li>宏基因组DNA建库试剂盒（可逆末端终止测序法）(货号：MD001，生产商：杭州杰毅生物技术有限公司)；</li>
+                    <li>核酸提取或纯化试剂盒（货号：MD012，生产商：杭州杰毅生物技术有限公司)；</li>
+                    <li>文库扩增试剂盒 （货号：MD097，生产商：杭州杰毅生物技术有限公司)；</li>
+                    <li>Qubit定量试剂；</li>
+                    <li>NGS文库定量试剂盒（探针法）（货号：MD057，生产商：杭州杰毅生物技术有限公司)；</li>
+                    <li>无核酸酶水；</li>
+                    <li>80%乙醇溶液；</li>
+                    <li>磁力架；</li>
+                    <li>涡旋振荡器；</li>
+                    <li>垂直混合仪；</li>
+                    <li>微型离心机；</li>
+                    <li>PCR仪；</li>
+                    <li>Qubit荧光计；</li>
+                    <li>微量移液器和枪头（无核酸酶）；</li>
+                    <li>PCR、qPCR实验专用的离心管或反应板。</li>
+                </ol>
+                
+                <h3>【操作方法】</h3>
+                <p><strong>1 核酸提取</strong></p>
+                <p>使用核酸提取试剂盒提取并纯化样本总核酸。</p>
+                
+                <p><strong>2 逆转录</strong></p>
+                <p>使用逆转录试剂盒（MD017，生产商：杭州杰毅生物技术有限公司)进行RNA的逆转录，将RNA转化为双链的cDNA。</p>
+                
+                <p><strong>3 文库构建</strong></p>
+                <p>使用宏基因组DNA建库试剂盒（可逆末端终止测序法）(货号：MD001，生产商：杭州杰毅生物技术有限公司)进行文库构建。</p>
+                <p>使用核酸提取或纯化试剂盒（货号：MD012，生产商：杭州杰毅生物技术有限公司）对构建好的文库进行纯化，得到纯化文库。</p>
+                
+                <p><strong>4 文库扩增</strong></p>
+                <p>使用文库扩增试剂盒（货号：MD097，生产商：杭州杰毅生物技术有限公司）对纯化文库进行扩增。</p>
+                <p>使用Qubit定量试剂对扩增后文库进行文库定量。</p>
+                <p>根据Qubit测出的扩增后文库浓度，按每文库800ng投入量计算该文库pooling体积, 每个杂交体系最多可进行16个文库的杂交。（如48个文库经预pooling后共得3个pool。）</p>
+                <p>使用核酸提取或纯化试剂盒（货号：MD012，生产商：杭州杰毅生物技术有限公司）对poolin后的混合文库进行磁珠浓缩，最后使用8 <span class="mark">μL无核酸酶水</span>洗脱，获得浓缩文库。</p>
+                
+                <p><strong>5 探针杂交</strong></p>
+                <p><strong>5.1 试剂准备</strong></p>
+                <p>从-20 ℃冰箱取出Hyb Buffer、Human Block、Blocking Oligo、Probes，置于室温融化，融化后在涡旋振荡器上短暂震荡混匀并瞬时离心。</p>
+                
+                <p><strong>5.2 文库杂交</strong></p>
+                <p><strong>5.2.1</strong> 取8µL备好的浓缩文库，按以下组分用量在室温配制杂交体系混合液。</p>
+                <table>
+                    <tr>
+                        <th>组分</th>
+                        <th>体积/每杂交系统</th>
+                    </tr>
+                    <tr>
+                        <td>Hyb Buffer</td>
+                        <td>13 <span class="mark">μL</span></td>
+                    </tr>
+                    <tr>
+                        <td>Human Block</td>
+                        <td>5 <span class="mark">μL</span></td>
+                    </tr>
+                    <tr>
+                        <td>Blocking Oligo</td>
+                        <td>2 <span class="mark">μL</span></td>
+                    </tr>
+                    <tr>
+                        <td>{pathogenAbbr} Probes</td>
+                        <td>2 <span class="mark">μL</span></td>
+                    </tr>
+                    <tr>
+                        <td>浓缩文库</td>
+                        <td>8 <span class="mark">μL</span></td>
+                    </tr>
+                    <tr>
+                        <td>总体积</td>
+                        <td>30 μL</td>
+                    </tr>
+                </table>
+                <p>注意：试剂开盖前需要短暂快速离心</p>
+                
+                <p><strong>5.2.2</strong> 使用移液器轻轻吹打混匀杂交混合液 8 次，快速离心 5 秒。将装有杂交混合液的PCR管放入PCR仪中按以下程序进行杂交反应。</p>
+                <p>热盖模式（95℃），设定体积 30 µL。</p>
+                <table>
+                    <tr>
+                        <th>温度</th>
+                        <th>时间</th>
+                        <th>循环数</th>
+                    </tr>
+                    <tr>
+                        <td>85 ℃</td>
+                        <td><span class="mark">5 min</span></td>
+                        <td><span class="mark">1</span></td>
+                    </tr>
+                    <tr>
+                        <td>60 ℃</td>
+                        <td><span class="mark">hold</span></td>
+                        <td><span class="mark">1</span></td>
+                    </tr>
+                </table>
+                <p>执行PCR 程序，60 ℃杂交14-16小时。</p>
+                
+                <p><strong>6 靶标捕获</strong></p>
+                <p><strong>6.1 试剂准备</strong></p>
+                <p>靶标捕获前，先从 4 ℃冰箱取出捕获磁珠，在涡旋振荡器上震荡 30 秒至磁珠充分重悬后，置于垂直混合仪上，室温平衡 30 分钟。</p>
+                <p>在PCR 仪上，设置 60 ℃ Hold，热盖设定为 70 ℃。根据杂交反应数，每个反应准备 3 管 Wash Buffer 2，每管 160 μL，放入PCR仪加热备用。</p>
+                <p>将Wash Buffer 1和Binding Buffer取出，观察是否有沉淀析出。若有沉淀，请将试剂置于37 ℃水浴锅中加热，待溶液完全澄清后使用；若无沉淀可直接使用。</p>
+                
+                <p><strong>6.2 捕获磁珠准备</strong></p>
+                <p><strong>6.2.1</strong> 室温平衡 30 分钟后，将捕获磁珠在漩涡震荡器上震荡 30 秒重悬。每杂交反应分别取 50 µL 捕获磁珠加入新PCR管内，置于磁力架上 1 min，待溶液澄清，移弃上清。</p>
+                <p><strong>6.2.2</strong> 从磁力架上取下PCR 管，加入180 µL Binding Buffer，涡旋振荡混匀，以重悬磁珠。瞬时离心后，放置于磁力架上静置，澄清后吸弃上清液。</p>
+                <p><strong>6.2.3</strong> Binding Buffer 清洗，最后吸弃上清液，仅保留磁珠在管底。重复该清洗步骤共3次</p>
+                <p><strong>6.2.4</strong> 从磁力架上取下PCR管，加入180 µL Binding Buffer吸打或涡旋混匀，立即进行下一步。</p>
+                
+                <p><strong>6.3 靶标文库捕获</strong></p>
+                <p><strong>6.3.1</strong> 保持过夜的杂交产物在 PCR仪上，将6.2.4步骤准备好的 180 μL 捕获磁珠加入到杂交产物中，吸打混匀。</p>
+                <p>注意：不要从 PCR 仪上拿下杂交混合液。温度的下降会导致捕获效率降低。</p>
+                <p><strong>6.3.2</strong> 将捕获磁珠与杂交产物混匀后，把PCR管从PCR仪上取下，置于垂直旋转混匀仪上，转速不超过10 rpm，室温结合30 min。30 min后将其从旋转仪上取下，快速离心 5 秒，放置磁力架 2-5 分钟，确保液体清澈，吸弃上清。</p>
+                
+                <p><strong>6.4 非靶标文库清洗</strong></p>
+                <p><strong>6.4.1</strong> 从磁力架上取下PCR管，向PCR管内加入150 µL的Wash Buffer 1，轻轻吸打混匀，以重悬磁珠，更换新的管盖，然后置于垂直旋转混匀仪上室温清洗15 min，转速不超过10 rpm。</p>
+                <p><strong>6.4.2</strong> 将PCR管取下，瞬时离心，置于磁力架上2 min，待溶液澄清后，移弃上清液。</p>
+                <p><strong>6.4.3</strong> 从磁力架上取下PCR管，加入150 µL 60℃预热的Wash Buffer 2，轻轻吸打混匀，瞬时离心，置于PCR仪上，60℃孵育10 min。</p>
+                <p><strong>6.4.4</strong> 将PCR管取下，瞬时离心，置于磁力架上，待溶液澄清后，移弃上清液。</p>
+                <p><strong>6.4.5</strong> 重复步骤<strong>6.4.3</strong>和<strong>6.4.4</strong>两次，<span class="mark">Wash Buffer 2清洗共3次。</span></p>
+                <p><span class="mark">注意：PCR 仪尽可能靠近磁力架，从 PCR 仪上取下离心管放在磁力架上，时间尽可能短，避免温度的大幅下降。</span></p>
+                <p><span class="mark"><strong>6.4.6</strong> 三次清洗完成后，将 PCR 管从PCR仪上取下，瞬时离心，轻轻吸打混匀，将全部液体（包含磁珠）转移到新的 PCR 管中，将新的PCR管置于磁力架上 2 min，待溶液澄清后，移弃上清液。</span></p>
+                <p><span class="mark"><strong>6.4.7</strong> 保持PCR管在磁力架上，向PCR管内加入200 µL 80%乙醇，静置30 s后彻底移弃乙醇溶液（可用10 µL移液器移弃残留乙醇），室温晾干磁珠使残留的乙醇完全挥发（干燥过程中，注意观察磁珠表面情况，避免磁珠过度干燥）。</span></p>
+                <p><span class="mark"><strong>6.4.8</strong> 向PCR管加入 24 µL 无核酸酶水，从磁力架上取下 PCR 管，短暂涡旋重悬混匀磁珠，得到磁珠重悬液，进行下一步的扩增反应。</span></p>
+                <p><span class="mark">注意：此时靶标文库结合在磁珠上，不要丢弃磁珠！</span></p>
+                
+                <p><strong>7 捕获文库扩增</strong></p>
+                <p><strong>7.1</strong> 提前将PCR Mix、PCR Primer 从-20℃冰箱中取出，置于冰盒上融化，融化后置于冰盒上暂存。</p>
+                <p><strong>7.2</strong> 按以下组分用量配制<span class="mark">反应体系。轻轻吹打混匀，确保磁珠和 PCR 反应体系混合均匀。</span></p>
+                <table>
+                    <tr>
+                        <th>组分</th>
+                        <th>体积/每反应</th>
+                    </tr>
+                    <tr>
+                        <td>PCR Mix</td>
+                        <td><span class="mark">25 μL</span></td>
+                    </tr>
+                    <tr>
+                        <td>PCR Primer</td>
+                        <td><span class="mark">1 μL</span></td>
+                    </tr>
+                    <tr>
+                        <td><span class="mark">磁珠重悬液</span><br><span class="mark">（步骤</span><strong>6.4.8</strong><span class="mark">）</span></td>
+                        <td><span class="mark">24 μL</span></td>
+                    </tr>
+                    <tr>
+                        <td><span class="mark">总体积</span></td>
+                        <td><span class="mark">50 μL</span></td>
+                    </tr>
+                </table>
+                
+                <p><strong>7.3</strong> 将装有上述反应液（包含磁珠）的PCR管放入PCR仪中按以下程序进行反应，热盖模式（105℃），设定体积 50 µL。</p>
+                <table>
+                    <tr>
+                        <th>温度</th>
+                        <th>时间</th>
+                        <th>循环数</th>
+                    </tr>
+                    <tr>
+                        <td>95 ℃</td>
+                        <td><span class="mark">1 min</span></td>
+                        <td><span class="mark">1</span></td>
+                    </tr>
+                    <tr>
+                        <td>98 ℃</td>
+                        <td><span class="mark">20 s</span></td>
+                        <td rowspan="3"><span class="mark">22</span></td>
+                    </tr>
+                    <tr>
+                        <td>60 ℃</td>
+                        <td><span class="mark">30 s</span></td>
+                    </tr>
+                    <tr>
+                        <td>72 ℃</td>
+                        <td><span class="mark">30 s</span></td>
+                    </tr>
+                    <tr>
+                        <td>72 ℃</td>
+                        <td><span class="mark">5 min</span></td>
+                        <td><span class="mark">1</span></td>
+                    </tr>
+                    <tr>
+                        <td>4 ℃</td>
+                        <td><span class="mark">hold</span></td>
+                        <td><span class="mark">1</span></td>
+                    </tr>
+                </table>
+                
+                <p><strong>7.4</strong> <span class="mark">程序完成后取出扩增产物，</span>使用核酸提取或纯化试剂盒（货号：MD012，生产商：杭州杰毅生物技术有限公司）对扩增产物进行纯化，<span class="mark">得到捕获文库。</span></p>
+                
+                <p><strong>8 捕获文库定量</strong></p>
+                <p>纯化所得捕获文库稀释后使用NGS文库定量试剂盒（探针法）（货号：MD057，生产商：杭州杰毅生物技术有限公司）进行文库定量，严格按照定量试剂盒及仪器说明书操作。</p>
+                
+                <p><strong>9 测序反应</strong></p>
+                <p>使用兼容可逆末端终止测序法或联合锚定探针聚合测序法的高通量基因测序仪及相应测序试剂盒进行DNA序列检测。测序操作应严格遵循所用测序试剂盒及仪器的说明书执行。测序读长设置建议如下：</p>
+                <table>
+                    <tr>
+                        <th>Read 1</th>
+                        <th>Index 1</th>
+                        <th>Index 2</th>
+                        <th>Read 2</th>
+                    </tr>
+                    <tr>
+                        <td>≥75</td>
+                        <td><span class="mark">8</span></td>
+                        <td><span class="mark">8</span></td>
+                        <td>≥0或75</td>
+                    </tr>
+                </table>
+                <p>注：Index 1与Index 2长度固定为8 bp。Read 1推荐不低于75 bp，也可根据实际需求采用双端测序（Paired-End）模式，以获得更准确的基因组覆盖与拼接效果。</p>
+                
+                <p><strong>10 生物信息学分析</strong></p>
+                <p>将测序平台测序得到的每个读序与参考数据库进行比对分析。</p>
+                
+                <h3>【注意事项】</h3>
+                <p><span class="mark">反应液的配制与分装须使用全新、无核酸酶污染的吸头、离心管等耗材，严格防范污染。</span></p>
+                <p><span class="mark">操作过程中应严格区分不同样本，避免样品间交叉污染。</span></p>
+                <p><span class="mark">操作人员需严格按照说明书步骤执行实验，不得擅自更改操作流程与试剂用量。</span></p>
+                <p><span class="mark">所有试剂在使用前应充分融化并恢复至室温，经涡旋混匀、瞬时离心，确保溶液澄清透明后方可使用。</span></p>
+                <p><span class="mark">本方法所获得的靶标文库适用于包括可逆末端终止测序法及联合锚定探针聚合测序法在内的高通量测序平台，如使用联合锚定探针聚合测序法平台，需使用相应的文库转化试剂盒对捕获后的文库进行转化处理。请根据实际仪器类型选择相应的测序试剂与程序。</span></p>
+                
+                <h3>【检验方法的局限性】</h3>
+                <p><span class="mark">本试剂盒用于{pathogen}全基因组捕获及测序文库构建，不适用于{pathogen}感染的临床诊断。其性能受样本质量及病原体载量影响显著：对于低病原体载量样本，捕获效率可能下降，难以达到95%以上的全基因组覆盖度，可能导致部分基因区段信息缺失或变异检出失败。对于此类样本，可通过重复实验或增加测序数据量等方法，在一定程度上改善捕获效果及基因组覆盖完整性。此外，在高通量测序过程中，可能因Index hopping（标签跳跃），在阴性对照或未感染样本中检出低水平{pathogen}序列，该现象属二代测序技术固有局限性，不应视为阳性结果。样本的采集、保存、运输及前期处理过程中的任何偏差亦可能影响捕获效率与最终测序结果。</span></p>
+                
+                <h3>【标识的解释】</h3>
+                <p>仅供科研使用</p>
+                
+                <h3>【基本信息】</h3>
+                <p>生产企业：杭州杰毅生物技术有限公司</p>
+                <p>住所：浙江省杭州市余杭区良渚街道金昌路2073号3 幢4 号楼 401室</p>
+                <p>联系方式：400-0888-365</p>
+                <p>售后服务单位：杭州杰毅生物技术有限公司</p>
+                <p>联系方式：400-0888-365</p>
+                <p>生产地址：浙江省杭州市余杭区良渚街道金昌路2073号3号楼3-4层</p>
+            `;
+
             // 生成说明书
             generateBtn.addEventListener('click', function() {
+                const pathogenType = document.getElementById('pathogenType').value;
                 const pathogen = document.getElementById('pathogen').value.trim();
                 const pathogenAbbr = document.getElementById('pathogenAbbr').value.trim();
                 const spec = document.getElementById('spec').value;
                 const itemNum = document.getElementById('itemNum').value.trim();
                 
                 // 验证输入
+                if (!pathogenType) {
+                    alert('请选择病原体类型（必填项）！');
+                    return;
+                }
                 if (!pathogen || !pathogenAbbr) {
                     alert('请填写病原体名称和英文简称（必填项）！');
                     return;
@@ -636,8 +961,16 @@
                     bindingBuffer = '5.8 mL/瓶×1瓶';
                 }
                 
+                // 根据病原体类型选择模板
+                let selectedTemplate;
+                if (pathogenType === 'DNA') {
+                    selectedTemplate = dnaTemplate;
+                } else if (pathogenType === 'RNA') {
+                    selectedTemplate = rnaTemplate;
+                }
+                
                 // 替换模板中的变量
-                let instructionsHTML = fullTemplate
+                let instructionsHTML = selectedTemplate
                     .replace(/{pathogen}/g, pathogen)
                     .replace(/{spec}/g, spec)
                     .replace(/{itemNum}/g, itemNum)
